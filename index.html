@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Маршрут</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ============================================================
+     РЕДАКТИРУЕМЫЕ ДАННЫЕ КВЕСТА — всё лежит в CONFIG внизу файла,
+     в теге <script>. Здесь только оформление.
+     ============================================================ */
+
+  :root{
+    --night-1: #0d1226;
+    --night-2: #171f3d;
+    --gold: #c79a3a;
+    --gold-soft: #e7c877;
+    --rose: #b3495a;
+    --paper: #f6efdd;
+    --paper-edge: #e8dcb8;
+    --ink: #221b12;
+    --ink-soft: #59503e;
+    --cream: #f4ede0;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0; padding:0; min-height:100%;
+  }
+
+  body{
+    font-family:'Manrope', sans-serif;
+    color: var(--cream);
+    background:
+      radial-gradient(ellipse at 50% -10%, #26305a 0%, transparent 60%),
+      linear-gradient(180deg, var(--night-1), var(--night-2) 60%, #0a0e1c 100%);
+    min-height:100svh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 28px 18px 0;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* лёгкая городская зарисовка на горизонте: шпиль + мост */
+  .skyline{
+    position:fixed; left:0; right:0; bottom:0; height:120px;
+    pointer-events:none; z-index:0; opacity:0.55;
+  }
+  .skyline svg{ width:100%; height:100%; display:block; }
+
+  .stars{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    width:100%; max-width: 440px;
+    padding-bottom: 48px;
+  }
+
+  .eyebrow{
+    text-align:center;
+    font-size:0.8rem;
+    color: var(--gold-soft);
+    letter-spacing:0.02em;
+    margin-bottom: 10px;
+    opacity:0.85;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: clamp(1.7rem, 6vw, 2.3rem);
+    line-height:1.15;
+    text-align:center;
+    margin: 0 0 12px;
+    color: var(--cream);
+  }
+
+  .sub{
+    text-align:center;
+    color: #cbc4e6;
+    font-size:0.98rem;
+    line-height:1.5;
+    max-width: 360px;
+    margin: 0 auto 28px;
+  }
+
+  .card{
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 3px;
+    padding: 30px 26px 28px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.55),
+      0 0 0 1px var(--paper-edge);
+    position:relative;
+  }
+
+  .card::before{
+    content:"";
+    position:absolute; inset: 8px;
+    border: 1px solid rgba(34,27,18,0.14);
+    pointer-events:none;
+  }
+
+  form{ display:flex; flex-direction:column; gap:14px; }
+
+  label{
+    font-size:0.85rem;
+    color: var(--ink-soft);
+  }
+
+  input[type="text"]{
+    font-family:'Manrope', sans-serif;
+    font-size:1.15rem;
+    font-weight:700;
+    letter-spacing:0.03em;
+    padding: 14px 16px;
+    border-radius: 2px;
+    border: 1.5px solid var(--paper-edge);
+    background: #fffdf6;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  input[type="text"]:focus{
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+    border-color: var(--gold);
+  }
+  input[type="text"].shake{
+    animation: shake 0.4s;
+    border-color: var(--rose);
+  }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-8px); }
+    40%{ transform: translateX(7px); }
+    60%{ transform: translateX(-5px); }
+    80%{ transform: translateX(4px); }
+  }
+
+  button{
+    font-family:'Manrope', sans-serif;
+    font-weight:700;
+    font-size:1rem;
+    padding: 14px 16px;
+    border-radius: 2px;
+    border: none;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: #2a1d05;
+    cursor:pointer;
+    transition: transform 0.15s ease;
+  }
+  button:hover{ transform: translateY(-1px); }
+  button:active{ transform: translateY(0); }
+
+  .error-msg{
+    font-size:0.88rem;
+    color: var(--rose);
+    min-height: 1.2em;
+    text-align:center;
+  }
+
+  .signature{
+    text-align:center;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    color: var(--ink-soft);
+    font-size:0.88rem;
+    margin-top: 18px;
+    opacity:0.75;
+  }
+
+  /* --- экран результата --- */
+  .result{ display:none; flex-direction:column; gap:16px; }
+  .result.show{ display:flex; animation: rise 0.5s ease; }
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .result h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.5rem;
+    margin:0;
+    color: var(--ink);
+  }
+
+  .result p{
+    margin:0;
+    line-height:1.55;
+    color: var(--ink-soft);
+    font-size:1rem;
+  }
+
+  .bonus{
+    background: #fffdf6;
+    border: 1.5px dashed var(--gold);
+    border-radius: 2px;
+    padding: 16px;
+    text-align:center;
+  }
+  .bonus .label{
+    font-size:0.8rem;
+    color: var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .bonus .code{
+    font-family:'Fraunces', serif;
+    font-size:1.3rem;
+    font-weight:600;
+    letter-spacing:0.04em;
+    color: var(--rose);
+  }
+  .bonus .terms{
+    font-size:0.8rem;
+    color: var(--ink-soft);
+    margin-top:6px;
+  }
+
+  .video-btn{ margin-top: 4px; }
+
+  .video-frame{
+    display:none;
+    margin-top: 14px;
+  }
+  .video-frame.show{ display:block; }
+  .video-frame iframe{
+    width:100%; aspect-ratio: 16/9;
+    border:0; border-radius: 2px;
+  }
+
+  .final-note{
+    display:none;
+    background: rgba(179,73,90,0.08);
+    border-left: 3px solid var(--rose);
+    padding: 12px 14px;
+    font-size:0.95rem;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+  .final-note.show{ display:block; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="stars" id="stars"></div>
+  <div class="skyline">
+    <svg viewBox="0 0 800 120" preserveAspectRatio="none">
+      <polygon points="0,120 0,95 40,95 40,70 60,70 60,95 90,95 90,60 100,15 110,60 120,95 160,95 160,80 190,80 190,95 260,95 260,88 300,88 300,95 360,95 360,40 366,40 366,20 372,40 378,40 378,95 430,95 430,75 460,75 460,95 520,95 520,85 560,85 560,95 620,95 620,70 650,70 650,95 700,95 700,88 740,88 740,95 800,95 800,120"
+        fill="#0a0e1c" opacity="0.9"/>
+    </svg>
+  </div>
+
+  <div class="wrap">
+    <p class="eyebrow">— секретный маршрут —</p>
+    <h1 id="mainTitle">Введи код с постера</h1>
+    <p class="sub" id="subText">Ты его уже нашла — значит, самое время узнать, что дальше.</p>
+
+    <div class="card">
+
+      <form id="codeForm">
+        <label for="codeInput">Код с постера</label>
+        <input type="text" id="codeInput" autocomplete="off" autocapitalize="characters" placeholder="НАПРИМЕР: SPB1" />
+        <button type="submit">Проверить код</button>
+        <p class="error-msg" id="errorMsg"></p>
+      </form>
+
+      <div class="result" id="result">
+        <h2 id="resultTitle"></h2>
+        <p id="resultBody"></p>
+
+        <div class="bonus" id="bonusBlock" style="display:none;">
+          <div class="label" id="bonusLabel"></div>
+          <div class="code" id="bonusCode"></div>
+          <div class="terms" id="bonusTerms"></div>
+        </div>
+
+        <button class="video-btn" id="videoBtn" style="display:none;">Смотреть видео</button>
+        <div class="video-frame" id="videoFrame">
+          <iframe id="videoIframe" src="" title="Видео" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+        <div class="final-note" id="finalNote"></div>
+      </div>
+
+    </div>
+
+    <p class="signature">— тот, кто знает тебя очень хорошо</p>
+  </div>
+
+<script>
+/* ================================================================
+   CONFIG — редактируй только это. Ничего ниже трогать не нужно.
+   ================================================================ */
+const CONFIG = {
+
+  // Коды с трёх постеров. Регистр и пробелы не важны — сайт сам
+  // приводит ввод к верхнему регистру и убирает пробелы по краям.
+  // Замени на свои, когда решишь, что писать на постерах.
+  codes: {
+    stage1: "БЕЛЫЕНОЧИ",
+    stage2: "МОСТРАЗВЕДЁН",
+    stage3: "НЕВСКИЙ58"
+  },
+
+  stage1: {
+    title: "Первый след найден",
+    body: "Отлично. Второй постер ищи там, где вы вдвоём в последний раз смеялись до слёз в этом городе — [ЗАМЕНИ НА РЕАЛЬНУЮ ПОДСКАЗКУ]."
+  },
+
+  stage2: {
+    title: "Второй след — и подарок по пути",
+    body: "Почти на месте. Третий постер прячется недалеко от [ЗАМЕНИ НА РЕАЛЬНУЮ ПОДСКАЗКУ].",
+    bonus: {
+      label: "Загляни в Золотое Яблоко и покажи это на кассе",
+      code: "ЗАМЕНИ-НА-РЕАЛЬНЫЙ-КОД",
+      terms: "[ЗАМЕНИ НА УСЛОВИЯ СЕРТИФИКАТА: срок действия, магазин, сумма]"
+    }
+  },
+
+  stage3: {
+    title: "Это был последний след",
+    body: "Ты дошла до конца маршрута.",
+    bonus: {
+      label: "И ещё один — в Cartier",
+      code: "ЗАМЕНИ-НА-РЕАЛЬНЫЙ-КОД",
+      terms: "[ЗАМЕНИ НА УСЛОВИЯ СЕРТИФИКАТА]"
+    },
+    // Вставь ссылку на НЕОПУБЛИКОВАННОЕ (unlisted) видео на YouTube.
+    // Формат: https://www.youtube.com/embed/ВОТ_ЭТОТ_ID
+    videoEmbedUrl: "https://www.youtube.com/embed/ЗАМЕНИ_НА_ID_ВИДЕО",
+    finalNote: "[ЗАМЕНИ НА ФИНАЛЬНЫЙ ТЕКСТ: куда прийти и когда]"
+  },
+
+  errorMessage: "Такого кода я не знаю. Проверь, всё ли верно ввела."
+};
+/* ================================================================ */
+
+function normalize(str){
+  return str.trim().toUpperCase().replace(/\s+/g, "");
+}
+
+function renderStars(){
+  const el = document.getElementById('stars');
+  let html = '';
+  for(let i=0;i<60;i++){
+    const x = Math.random()*100, y = Math.random()*70, s = Math.random()*1.6+0.5, o = Math.random()*0.6+0.2;
+    html += `<div style="position:absolute;left:${x}%;top:${y}%;width:${s}px;height:${s}px;background:#fff;border-radius:50%;opacity:${o};"></div>`;
+  }
+  el.innerHTML = html;
+}
+renderStars();
+
+function showResult({title, body, bonus, video, finalNote}){
+  document.getElementById('codeForm').style.display = 'none';
+  const result = document.getElementById('result');
+  result.classList.add('show');
+
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultBody').textContent = body;
+
+  const bonusBlock = document.getElementById('bonusBlock');
+  if(bonus){
+    bonusBlock.style.display = 'block';
+    document.getElementById('bonusLabel').textContent = bonus.label;
+    document.getElementById('bonusCode').textContent = bonus.code;
+    document.getElementById('bonusTerms').textContent = bonus.terms;
+  } else {
+    bonusBlock.style.display = 'none';
+  }
+
+  const videoBtn = document.getElementById('videoBtn');
+  if(video){
+    videoBtn.style.display = 'inline-block';
+    videoBtn.onclick = () => {
+      document.getElementById('videoIframe').src = video;
+      document.getElementById('videoFrame').classList.add('show');
+      document.getElementById('finalNote').textContent = finalNote || '';
+      document.getElementById('finalNote').classList.add('show');
+      videoBtn.style.display = 'none';
+    };
+  } else {
+    videoBtn.style.display = 'none';
+  }
+}
+
+document.getElementById('codeForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const input = document.getElementById('codeInput');
+  const val = normalize(input.value);
+  const errorMsg = document.getElementById('errorMsg');
+
+  if(val === normalize(CONFIG.codes.stage1)){
+    showResult({ title: CONFIG.stage1.title, body: CONFIG.stage1.body });
+  } else if(val === normalize(CONFIG.codes.stage2)){
+    showResult({ title: CONFIG.stage2.title, body: CONFIG.stage2.body, bonus: CONFIG.stage2.bonus });
+  } else if(val === normalize(CONFIG.codes.stage3)){
+    showResult({
+      title: CONFIG.stage3.title,
+      body: CONFIG.stage3.body,
+      bonus: CONFIG.stage3.bonus,
+      video: CONFIG.stage3.videoEmbedUrl,
+      finalNote: CONFIG.stage3.finalNote
+    });
+  } else {
+    errorMsg.textContent = CONFIG.errorMessage;
+    input.classList.add('shake');
+    setTimeout(()=> input.classList.remove('shake'), 400);
+    return;
+  }
+  errorMsg.textContent = '';
+});
+</script>
+</body>
+</html>
