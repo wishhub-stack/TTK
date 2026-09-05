@@ -52,12 +52,12 @@
     background-repeat:no-repeat;
   }
 
-  /* ---------- экран ввода кода: только поле, прямо на фото ---------- */
+  /* ---------- экран ввода кода: компактная плашка, как поле для сообщений ---------- */
   .code-entry{
     position:fixed;
     top:49%;
-    left:44%;
     right:8%;
+    width: min(230px, 46vw);
     transform: translateY(-50%);
     transition: opacity 0.35s ease, transform 0.35s ease;
   }
@@ -67,31 +67,51 @@
     transform: translateY(-50%) translateY(-8px);
   }
 
+  .bubble{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background: rgba(255,253,248,0.94);
+    border-radius: 999px;
+    padding: 6px 6px 6px 18px;
+    box-shadow:
+      0 10px 26px rgba(36,26,20,0.2),
+      0 0 0 1px rgba(233,220,196,0.85);
+  }
+  .bubble.shake{ animation: shake 0.4s; }
+
   #codeInput{
-    display:block;
-    width:100%;
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size: clamp(1.15rem, 6.2vw, 1.55rem);
-    letter-spacing:0.05em;
-    text-align:center;
+    flex: 1;
+    min-width: 0;
+    font-family:'Manrope', sans-serif;
+    font-weight:700;
+    font-size: 1rem;
+    letter-spacing:0.03em;
     text-transform:uppercase;
     color: var(--ink);
     background: transparent;
     border: none;
-    border-bottom: 2px solid rgba(36,26,20,0.38);
-    padding: 6px 4px 10px;
+    padding: 8px 0;
     caret-color: var(--rose);
   }
-  #codeInput::placeholder{ color: transparent; }
-  #codeInput:focus{
-    outline:none;
-    border-bottom-color: var(--rose);
+  #codeInput::placeholder{ color: rgba(36,26,20,0.32); text-transform:none; letter-spacing:0; font-weight:500; }
+  #codeInput:focus{ outline:none; }
+
+  .send-btn{
+    flex-shrink:0;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: #2a1d05;
+    cursor:pointer;
+    padding:0;
   }
-  #codeInput.shake{
-    animation: shake 0.4s;
-    border-bottom-color: var(--rose);
-  }
+  .send-btn svg{ width:16px; height:16px; }
+
   @keyframes shake{
     0%,100%{ transform: translateX(0); }
     20%{ transform: translateX(-8px); }
@@ -242,7 +262,14 @@
   <div class="bg-photo"></div>
 
   <form id="codeForm" class="code-entry">
-    <input type="text" id="codeInput" aria-label="Код с постера" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+    <div class="bubble" id="bubble">
+      <input type="text" id="codeInput" aria-label="Код с постера" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+      <button type="submit" class="send-btn" aria-label="Отправить">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 19V5M12 5L6 11M12 5L18 11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
   </form>
 
   <div class="sheet" id="resultSheet">
@@ -277,11 +304,12 @@ const CONFIG = {
 
   // Коды с трёх постеров. Регистр и пробелы не важны — сайт сам
   // приводит ввод к верхнему регистру и убирает пробелы по краям.
-  // Замени на свои, когда решишь, что писать на постерах.
+  // Сейчас стоят тестовые коды 1 / 2 / 3, чтобы можно было быстро
+  // пройти весь квест и всё проверить. Замени на свои перед печатью постеров.
   codes: {
-    stage1: "БЕЛЫЕНОЧИ",
-    stage2: "МОСТРАЗВЕДЁН",
-    stage3: "НЕВСКИЙ58"
+    stage1: "1",
+    stage2: "2",
+    stage3: "3"
   },
 
   stage1: {
@@ -375,8 +403,8 @@ document.getElementById('codeForm').addEventListener('submit', function(e){
       finalNote: CONFIG.stage3.finalNote
     });
   } else {
-    input.classList.add('shake');
-    setTimeout(()=> input.classList.remove('shake'), 400);
+    document.getElementById('bubble').classList.add('shake');
+    setTimeout(()=> document.getElementById('bubble').classList.remove('shake'), 400);
   }
 });
 </script>
