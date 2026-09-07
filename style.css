@@ -28,6 +28,11 @@ body {
   padding: 48px 20px 64px;
 }
 
+body.no-scroll {
+  overflow: hidden;
+  height: 100%;
+}
+
 .wrap {
   width: 100%;
   max-width: 460px;
@@ -38,6 +43,14 @@ body {
 .hero {
   text-align: center;
   margin-bottom: 36px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.hero.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .eyebrow {
@@ -348,6 +361,91 @@ body {
   color: var(--gold);
   opacity: 0.7;
   font-size: 15px;
+}
+
+/* ---------- Splash / intro ---------- */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: var(--bg);
+  padding: 0 8vw;
+}
+
+.splash-logo {
+  width: min(82vw, 480px);
+  aspect-ratio: 1200 / 906;
+  opacity: 0;
+  -webkit-mask-image: url('images/logo.svg');
+  mask-image: url('images/logo.svg');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  background: linear-gradient(155deg, var(--gold-light) 15%, var(--gold) 70%);
+  filter: drop-shadow(0 6px 30px rgba(201, 151, 90, 0.25));
+  animation: splash-logo-in 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.splash-sub {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 22px;
+  letter-spacing: 0.5em;
+  padding-left: 0.5em; /* компенсируем letter-spacing справа */
+  color: var(--gold);
+  opacity: 0;
+  margin: 0;
+  animation: splash-sub-in 0.7s ease forwards;
+  animation-delay: 0.85s;
+}
+
+@keyframes splash-logo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86) translateY(14px);
+    filter: drop-shadow(0 6px 30px rgba(201, 151, 90, 0)) blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: drop-shadow(0 6px 30px rgba(201, 151, 90, 0.25)) blur(0);
+  }
+}
+
+@keyframes splash-sub-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.splash.exiting {
+  transition: transform 0.85s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.75s ease;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash.exiting .splash-logo,
+.splash.exiting .splash-sub {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-logo,
+  .splash-sub,
+  .hero {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 @media (max-width: 380px) {

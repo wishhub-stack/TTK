@@ -8,7 +8,7 @@ const STAGES = [
   {
     id: 1,
     // код, который нужно найти в первой локации
-    code: "СОЛНЦЕ",
+    code: "123", // тестовый код — замени на реальный, когда всё будет готово
     // текст и картинка, которые появятся ПОСЛЕ верного кода
     heading: "Первый код принят",
     text: "Отправляйся сюда — там спрятана следующая подсказка.",
@@ -20,7 +20,7 @@ const STAGES = [
   },
   {
     id: 2,
-    code: "ЛУНА",
+    code: "123", // тестовый код
     heading: "Второй код принят",
     text: "Дальше — новая точка на карте. И небольшой подарок по пути.",
     coords: "55.7601, 37.6186",
@@ -34,7 +34,7 @@ const STAGES = [
   },
   {
     id: 3,
-    code: "ЗВЕЗДА",
+    code: "123", // тестовый код
     heading: "Финал",
     text: "Ты нашла всё, что было спрятано. Осталось последнее.",
     coords: null,
@@ -207,3 +207,42 @@ function render() {
 }
 
 render();
+
+/* ==========================================================
+   ВСТУПИТЕЛЬНЫЙ ЭКРАН (splash)
+   Логотип появляется по центру, держится, уходит вверх —
+   и на его месте проявляется заголовок страницы.
+   "???" внизу — заглушка, потом здесь появится подпись.
+   ========================================================== */
+
+(function runSplash() {
+  const splash = document.getElementById("splash");
+  const hero = document.querySelector(".hero");
+  if (!splash || !hero) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reducedMotion) {
+    splash.remove();
+    hero.classList.add("visible");
+    return;
+  }
+
+  document.body.classList.add("no-scroll");
+
+  const HOLD_MS = 1900; // сколько логотип держится по центру перед уходом
+
+  setTimeout(() => {
+    splash.classList.add("exiting");
+    hero.classList.add("visible");
+  }, HOLD_MS);
+
+  splash.addEventListener(
+    "transitionend",
+    () => {
+      splash.remove();
+      document.body.classList.remove("no-scroll");
+    },
+    { once: true }
+  );
+})();
