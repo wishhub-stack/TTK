@@ -209,40 +209,63 @@ function render() {
 render();
 
 /* ==========================================================
-   ВСТУПИТЕЛЬНЫЙ ЭКРАН (splash)
-   Логотип появляется по центру, держится, уходит вверх —
-   и на его месте проявляется заголовок страницы.
-   "???" внизу — заглушка, потом здесь появится подпись.
+   ВСТУПИТЕЛЬНЫЙ ЭКРАН (splash), в три фазы:
+   1. обводка контура логотипа "рисуется" (stroke-dashoffset)
+   2. обводка растворяется, проступает золотая заливка (PNG-маска)
+   3. логотип уменьшается и уплывает наверх, на его месте
+      проявляется вся страница
+   "???" — заглушка, потом здесь появится подпись.
    ========================================================== */
 
 (function runSplash() {
   const splash = document.getElementById("splash");
-  const hero = document.querySelector(".hero");
-  if (!splash || !hero) return;
+  const wrap = document.getElementById("wrap");
+  const logoWrap = document.getElementById("splashLogoWrap");
+  const strokePath = document.getElementById("logoStrokePath");
+  const splashSub = document.getElementById("splash-sub");
+  if (!splash || !wrap || !logoWrap || !strokePath) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (reducedMotion) {
     splash.remove();
-    hero.classList.add("visible");
+    wrap.classList.add("visible");
     return;
   }
 
+  // тайминги (мс) — должны примерно совпадать с transition-duration в style.css
+  const DRAW_MS = 1600; // рисовка контура
+  const FILL_MS = 550;  // растворение обводки / проступание заливки
+  const HOLD_MS = 550;  // логотип стоит уже залитый, перед тем как уплыть
+  const FLY_MS = 850;   // "полёт" наверх
+
   document.body.classList.add("no-scroll");
 
-  const HOLD_MS = 1900; // сколько логотип держится по центру перед уходом
+  // готовим контур: длина пути становится и штрихом, и стартовым смещением
+  const length = strokePath.getTotalLength();
+  strokePath.style.strokeDasharray = String(length);
+  strokePath.style.strokeDashoffset = String(length);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      strokePath.style.strokeDashoffset = "0"; // запускает transition -> рисовка
+    });
+  });
+
+  // фаза 2: заливка проступает поверх обводки
+  setTimeout(() => {
+    logoWrap.classList.add("filled");
+    if (splashSub) splashSub.classList.add("visible");
+  }, DRAW_MS);
+
+  // фаза 3: логотип уплывает наверх, страница проявляется
+  setTimeout(() => {
+    splash.classList.add("leaving");
+    wrap.classList.add("visible");
+  }, DRAW_MS + FILL_MS + HOLD_MS);
 
   setTimeout(() => {
-    splash.classList.add("exiting");
-    hero.classList.add("visible");
-  }, HOLD_MS);
-
-  splash.addEventListener(
-    "transitionend",
-    () => {
-      splash.remove();
-      document.body.classList.remove("no-scroll");
-    },
-    { once: true }
-  );
+    splash.remove();
+    document.body.classList.remove("no-scroll");
+  }, DRAW_MS + FILL_MS + HOLD_MS + FLY_MS);
 })();
