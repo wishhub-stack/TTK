@@ -53,23 +53,21 @@ body.no-scroll {
   transform: translateY(0);
 }
 
-.eyebrow {
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  color: var(--gold);
-  margin: 0 0 14px;
-  text-transform: lowercase;
+.hero-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
 }
 
-.title {
+.hero-tagline {
   font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 44px;
-  line-height: 1.05;
-  letter-spacing: 0.01em;
-  color: var(--gold-light);
-  margin: 0 0 16px;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 15px;
+  letter-spacing: 0.4em;
+  padding-left: 0.4em;
+  color: var(--gold);
+  margin: 0 0 14px;
 }
 
 .subtitle {
@@ -378,21 +376,23 @@ body.no-scroll {
   padding: 0 8vw;
 }
 
-.splash-logo {
-  width: min(82vw, 480px);
+/* общий стиль для логотипа: и в сплэше, и в шапке — один <use> на символ */
+
+.logo-mark {
+  display: block;
+  fill: url(#goldGradient);
   aspect-ratio: 1200 / 906;
+}
+
+.logo-mark--splash {
+  width: min(82vw, 480px);
   opacity: 0;
-  -webkit-mask-image: url('images/logo.svg');
-  mask-image: url('images/logo.svg');
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  background: linear-gradient(155deg, var(--gold-light) 15%, var(--gold) 70%);
   filter: drop-shadow(0 6px 30px rgba(201, 151, 90, 0.25));
   animation: splash-logo-in 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.logo-mark--header {
+  width: min(62vw, 280px);
 }
 
 .splash-sub {
@@ -434,13 +434,13 @@ body.no-scroll {
   pointer-events: none;
 }
 
-.splash.exiting .splash-logo,
+.splash.exiting .logo-mark--splash,
 .splash.exiting .splash-sub {
   animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .splash-logo,
+  .logo-mark--splash,
   .splash-sub,
   .hero {
     animation: none !important;
@@ -449,5 +449,5 @@ body.no-scroll {
 }
 
 @media (max-width: 380px) {
-  .title { font-size: 36px; }
+  .logo-mark--header { width: 68vw; }
 }
