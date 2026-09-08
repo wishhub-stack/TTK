@@ -77,8 +77,15 @@ body.no-scroll {
 
 .logo-img {
   width: min(58vw, 240px);
-  height: auto;
+  aspect-ratio: 900 / 681;
   display: block;
+  background-color: var(--gold);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.9s ease, transform 0.9s ease;
