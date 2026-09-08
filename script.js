@@ -266,7 +266,7 @@ render();
   const dy = targetY - finalRect.top;
 
   heroFlip.style.transformOrigin = "top left";
-  heroFlip.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+  heroFlip.style.transform = `translate(${dx}px, ${dy}px) scale(${scale}) translateZ(0)`;
 
   // --- фаза 1: логотип спокойно проявляется ---
   requestAnimationFrame(() => {
@@ -288,7 +288,7 @@ render();
   // --- фаза 3: логотип + ??? одним движением уезжают на своё место ---
   setTimeout(() => {
     heroFlip.style.transition = `transform ${FLY_MS}ms cubic-bezier(.65,0,.35,1)`;
-    heroFlip.style.transform = "none";
+    heroFlip.style.transform = "translateZ(0)";
   }, qDoneAt + HOLD_MS);
 
   // --- фаза 4: остальная страница проявляется "из пелены" ---
