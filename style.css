@@ -96,19 +96,14 @@ body.no-scroll {
   -webkit-mask-size: contain;
   mask-size: contain;
   opacity: 0;
-  transform: translateY(10px) translateZ(0);
-  -webkit-transform: translateY(10px) translateZ(0);
+  transform: translateY(10px);
   transition: opacity 0.9s ease, transform 0.9s ease;
   filter: drop-shadow(0 4px 14px rgba(201, 151, 90, 0.2));
-  will-change: opacity, transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .logo-img.visible {
   opacity: 1;
-  transform: translateY(0) translateZ(0);
-  -webkit-transform: translateY(0) translateZ(0);
+  transform: translateY(0);
 }
 
 .hero-tagline {
@@ -125,18 +120,13 @@ body.no-scroll {
 .hero-tagline .q {
   opacity: 0;
   display: inline-block;
-  transform: translateY(6px) translateZ(0);
-  -webkit-transform: translateY(6px) translateZ(0);
+  transform: translateY(6px);
   transition: opacity 0.35s ease, transform 0.35s ease;
-  will-change: opacity, transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .hero-tagline .q.visible {
   opacity: 1;
-  transform: translateY(0) translateZ(0);
-  -webkit-transform: translateY(0) translateZ(0);
+  transform: translateY(0);
 }
 
 .subtitle {
