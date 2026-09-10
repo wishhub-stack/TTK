@@ -86,15 +86,8 @@ body.no-scroll {
 
 .logo-img {
   width: clamp(80px, 26vw, 120px);
-  aspect-ratio: 900 / 681;
+  aspect-ratio: 1223 / 927;
   display: block;
-  background-color: var(--gold);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.9s ease, transform 0.9s ease;
@@ -426,11 +419,108 @@ body.no-scroll {
   font-size: 13px;
 }
 
+/* ---------- Финальный экран: подпись ---------- */
+
+.finale {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  text-align: center;
+}
+
+.finale-trigger {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 10px;
+  margin: 0;
+  cursor: pointer;
+  transform-origin: center;
+  transition: transform 0.42s cubic-bezier(.65,0,.35,1), opacity 0.38s ease;
+}
+
+.finale-trigger.growing {
+  transform: scale(3.4);
+  opacity: 0;
+}
+
+.finale-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.65,0,.35,1);
+}
+
+.finale-reveal.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.finale-svg {
+  width: min(66vw, 240px);
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.finale-stroke {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.finale-fill {
+  fill: var(--gold-light);
+  opacity: 0;
+}
+
+.finale-cta {
+  display: inline-block;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+.finale-cta.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.finale-restart {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.finale-restart.visible {
+  opacity: 0.6;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .logo-img,
   .hero-tagline .q,
   .veil,
-  .hero-flip {
+  .hero-flip,
+  .finale-trigger,
+  .finale-reveal,
+  .finale-cta {
     transition: none !important;
   }
 }
