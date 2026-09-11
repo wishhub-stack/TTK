@@ -336,6 +336,7 @@ function onFinaleMarksActivate(marks) {
           <path id="finaleInkFill" class="finale-fill" fill-rule="evenodd" d="${SIGNATURE_FILL_D}"></path>
         </svg>
         <a class="btn btn-ghost finale-cta" id="finaleCta" href="https://t.me/wish_tgm" target="_blank" rel="noopener">напиши @wish_tgm</a>
+        <button type="button" class="finale-restart" id="finaleRestart">начать квест заново</button>
       </span>
     `;
     setupFinaleSignature();
@@ -343,6 +344,12 @@ function onFinaleMarksActivate(marks) {
     const strokeLayer = document.getElementById("finaleStrokeLayer");
     const cta = document.getElementById("finaleCta");
     const restart = document.getElementById("finaleRestart");
+    if (restart) {
+      restart.addEventListener("click", () => {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      });
+    }
     playSignatureDraw(
       { strokeEls: finaleStrokeEls, inkFill, strokeLayer },
       {
@@ -372,15 +379,27 @@ function onFinaleMarksActivate(marks) {
 function renderFinished() {
   progressEl.style.display = "none";
 
-  app.classList.add("finale-app");
-  app.innerHTML = `<button type="button" class="finale-restart" id="finaleRestart">начать квест заново</button>`;
+  const subtitleEl = document.getElementById("subtitle");
+  const footerEl = document.getElementById("footer");
 
-  document.getElementById("finaleRestart").addEventListener("click", () => {
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  });
+  // 1) сначала плавно прячем всё, кроме шапки (логотип) и "???" под ней —
+  // у этих элементов уже есть переход через класс veil, просто снимаем "visible"
+  if (subtitleEl) subtitleEl.classList.remove("visible");
+  if (footerEl) footerEl.classList.remove("visible");
+  app.classList.remove("visible");
 
-  flyTaglineToCenter();
+  const FADE_MS = 800; // совпадает с длительностью перехода у .veil
+
+  setTimeout(() => {
+    // прибираем за собой, чтобы ничего не накладывалось друг на друга
+    if (subtitleEl) subtitleEl.style.display = "none";
+    if (footerEl) footerEl.style.display = "none";
+    app.classList.add("finale-app");
+    app.innerHTML = "";
+
+    // 2) и только теперь "???" плавно едут в центр экрана
+    flyTaglineToCenter();
+  }, FADE_MS);
 }
 
 /* --- сброс прогресса: открой сайт со ?reset в конце ссылки --- */
