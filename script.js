@@ -248,64 +248,139 @@ function playSignatureDraw({ strokeEls, inkFill, strokeLayer }, { totalDrawMs = 
   }, total > 0 ? totalDrawMs + 20 : 0);
 }
 
-/* --- тап по "???": разрастается на центр экрана, на её месте появляется подпись --- */
-function playFinaleReveal() {
-  const trigger = document.getElementById("finaleTrigger");
-  const reveal = document.getElementById("finaleReveal");
-  const restart = document.getElementById("finaleRestart");
-  const cta = document.getElementById("finaleCta");
-  const inkFill = document.getElementById("finaleInkFill");
-  const strokeLayer = document.getElementById("finaleStrokeLayer");
+/* --- финал: настоящие "???" из шапки плавно летят в центр экрана
+   и чуть увеличиваются; по тапу они гаснут один за другим,
+   а на их месте дорисовывается подпись --- */
+function flyTaglineToCenter() {
+  const marks = document.getElementById("taglineMarks");
+  if (!marks) return;
   const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SCALE = 1.5;
 
-  trigger.disabled = true;
-
-  const showReveal = () => {
-    trigger.style.display = "none";
-    reveal.classList.add("visible");
-    restart.classList.add("visible");
-    playSignatureDraw(
-      { strokeEls: finaleStrokeEls, inkFill, strokeLayer },
-      { onComplete: () => cta.classList.add("visible") }
-    );
+  const settle = () => {
+    // переключаемся на фиксированное центрирование — само подстроится,
+    // даже когда внутри вырастет подпись вместо "???"
+    marks.style.transition = "none";
+    marks.style.position = "fixed";
+    marks.style.top = "50%";
+    marks.style.left = "50%";
+    marks.style.transformOrigin = "center";
+    marks.style.transform = `translate(-50%, -50%) scale(${SCALE})`;
+    void marks.offsetWidth;
+    marks.style.transition = "opacity 0.3s ease";
+    armFinaleClick(marks);
   };
 
   if (reducedMotion) {
-    showReveal();
+    marks.style.position = "fixed";
+    marks.style.top = "50%";
+    marks.style.left = "50%";
+    marks.style.transform = `translate(-50%, -50%) scale(${SCALE})`;
+    armFinaleClick(marks);
     return;
   }
 
-  trigger.classList.add("growing");
-  setTimeout(showReveal, 420);
+  document.body.classList.add("no-scroll");
+
+  const finalRect = marks.getBoundingClientRect();
+  const targetWidth = finalRect.width * SCALE;
+  const targetHeight = finalRect.height * SCALE;
+  const targetX = (window.innerWidth - targetWidth) / 2;
+  const targetY = (window.innerHeight - targetHeight) / 2;
+  const dx = targetX - finalRect.left;
+  const dy = targetY - finalRect.top;
+
+  marks.style.transformOrigin = "top left";
+  marks.style.transition = "transform 0.9s cubic-bezier(.65,0,.35,1)";
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      marks.style.transform = `translate(${dx}px, ${dy}px) scale(${SCALE})`;
+    });
+  });
+
+  setTimeout(settle, 950);
 }
 
-function renderFinished() {
-  progressEl.style.display = "none";
-  app.innerHTML = `
-    <div class="finale">
-      <button type="button" class="finale-trigger" id="finaleTrigger" aria-label="Показать подпись">
-        <p class="hero-tagline" style="margin:0;">
-          <span class="q visible">?</span><span class="q visible">?</span><span class="q visible">?</span>
-        </p>
-      </button>
-      <div class="finale-reveal" id="finaleReveal">
+function armFinaleClick(marks) {
+  marks.classList.add("finale-ready");
+  marks.setAttribute("role", "button");
+  marks.setAttribute("tabindex", "0");
+  marks.setAttribute("aria-label", "Показать подпись");
+
+  const activate = () => onFinaleMarksActivate(marks);
+  marks.addEventListener("click", activate, { once: true });
+  marks.addEventListener("keydown", function onKey(e) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      marks.removeEventListener("keydown", onKey);
+      activate();
+    }
+  });
+}
+
+function onFinaleMarksActivate(marks) {
+  const q1 = document.getElementById("q1");
+  const q2 = document.getElementById("q2");
+  const q3 = document.getElementById("q3");
+  const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  marks.classList.remove("finale-ready");
+  marks.removeAttribute("role");
+  marks.removeAttribute("tabindex");
+
+  const showSignature = () => {
+    marks.innerHTML = `
+      <span class="finale-content" id="finaleContent">
         <svg class="finale-svg" id="finaleSvg" viewBox="0 0 1105 505" xmlns="http://www.w3.org/2000/svg">
           <g id="finaleStrokeLayer"></g>
           <path id="finaleInkFill" class="finale-fill" fill-rule="evenodd" d="${SIGNATURE_FILL_D}"></path>
         </svg>
         <a class="btn btn-ghost finale-cta" id="finaleCta" href="https://t.me/wish_tgm" target="_blank" rel="noopener">напиши @wish_tgm</a>
-      </div>
-      <button type="button" class="finale-restart" id="finaleRestart">начать квест заново</button>
-    </div>
-  `;
+      </span>
+    `;
+    setupFinaleSignature();
+    const inkFill = document.getElementById("finaleInkFill");
+    const strokeLayer = document.getElementById("finaleStrokeLayer");
+    const cta = document.getElementById("finaleCta");
+    const restart = document.getElementById("finaleRestart");
+    playSignatureDraw(
+      { strokeEls: finaleStrokeEls, inkFill, strokeLayer },
+      {
+        onComplete: () => {
+          cta.classList.add("visible");
+          if (restart) restart.classList.add("visible");
+          document.body.classList.remove("no-scroll");
+        },
+      }
+    );
+  };
 
-  setupFinaleSignature();
+  if (reducedMotion) {
+    showSignature();
+    return;
+  }
 
-  document.getElementById("finaleTrigger").addEventListener("click", playFinaleReveal);
+  // "?" гаснут один за другим (используем уже готовый переход у .q)
+  const qs = [q1, q2, q3].filter(Boolean);
+  qs.forEach((q, i) => {
+    setTimeout(() => q.classList.remove("visible"), i * 150);
+  });
+
+  setTimeout(showSignature, (qs.length - 1) * 150 + 350);
+}
+
+function renderFinished() {
+  progressEl.style.display = "none";
+
+  app.classList.add("finale-app");
+  app.innerHTML = `<button type="button" class="finale-restart" id="finaleRestart">начать квест заново</button>`;
+
   document.getElementById("finaleRestart").addEventListener("click", () => {
     localStorage.removeItem(STORAGE_KEY);
     location.reload();
   });
+
+  flyTaglineToCenter();
 }
 
 /* --- сброс прогресса: открой сайт со ?reset в конце ссылки --- */
@@ -332,24 +407,20 @@ render();
 
 /* ==========================================================
    ВСТУПИТЕЛЬНЫЙ ЭКРАН:
-   1. логотип (PNG) спокойно проявляется по центру экрана
-      (крупно — элемент временно "телепортирован" туда через
-      transform, см. FLIP ниже)
-   2. появляются "?" один за другим
-   3. логотип + ??? одним бесшовным движением (тот же самый
-      элемент, без подмены) переезжают на своё обычное место
-      в шапке
-   4. только после этого остальная страница проявляется "из пелены"
+   1. логотип и "???" стоят на своём обычном месте в шапке
+      с самого начала (без перелёта — так они всегда чёткие)
+   2. логотип проявляется, затем "?" один за другим
+   3. после этого остальная страница проявляется сверху вниз,
+      элемент за элементом
    ========================================================== */
 
 (function runIntro() {
-  const heroFlip = document.getElementById("heroFlip");
   const logoImg = document.getElementById("logoImg");
   const q1 = document.getElementById("q1");
   const q2 = document.getElementById("q2");
   const q3 = document.getElementById("q3");
-  const veilEls = document.querySelectorAll(".veil");
-  if (!heroFlip || !logoImg) return;
+  const veilEls = Array.from(document.querySelectorAll(".veil"));
+  if (!logoImg) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -361,37 +432,22 @@ render();
   }
 
   // тайминги (мс)
-  const LOGO_MS = 900;    // спокойное проявление логотипа
-  const Q_GAP_MS = 220;   // пауза между появлением каждого "?"
-  const Q_FADE_MS = 350;  // время появления одного "?"
-  const HOLD_MS = 400;    // пауза после того как всё появилось
-  const FLY_MS = 900;     // "бесшовный" переезд на своё место
-  const REST_DELAY_MS = 150; // маленькая пауза перед проявлением остальной страницы
+  const LOGO_MS = 900;      // спокойное проявление логотипа
+  const Q_GAP_MS = 220;     // пауза между появлением каждого "?"
+  const Q_FADE_MS = 350;    // время появления одного "?"
+  const HOLD_MS = 300;      // пауза перед тем, как пойдёт остальная страница
+  const STAGGER_MS = 160;   // с каким шагом появляются элементы ниже, сверху вниз
 
   document.body.classList.add("no-scroll");
 
-  // --- FLIP: считаем, где логотип+??? стоят "по-настоящему" (в шапке),
-  // и временно переносим их transform'ом в центр экрана крупно ---
-  const finalRect = heroFlip.getBoundingClientRect();
-  const targetWidth = Math.min(window.innerWidth * 0.8, 430);
-  const scale = targetWidth / finalRect.width;
-  const targetHeight = finalRect.height * scale;
-  const targetX = (window.innerWidth - targetWidth) / 2;
-  const targetY = (window.innerHeight - targetHeight) / 2;
-  const dx = targetX - finalRect.left;
-  const dy = targetY - finalRect.top;
-
-  heroFlip.style.transformOrigin = "top left";
-  heroFlip.style.transform = `translate(${dx}px, ${dy}px) scale(${scale}) translateZ(0)`;
-
-  // --- фаза 1: логотип спокойно проявляется ---
+  // --- фаза 1: логотип спокойно проявляется на месте ---
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       logoImg.classList.add("visible");
     });
   });
 
-  // --- фаза 2: "?" появляются по одному ---
+  // --- фаза 2: "?" появляются по одному на месте ---
   [q1, q2, q3].forEach((q, i) => {
     if (!q) return;
     setTimeout(() => {
@@ -401,22 +457,15 @@ render();
 
   const qDoneAt = LOGO_MS + 3 * (Q_GAP_MS + Q_FADE_MS);
 
-  // --- фаза 3: логотип + ??? одним движением уезжают на своё место ---
-  setTimeout(() => {
-    heroFlip.style.transition = `transform ${FLY_MS}ms cubic-bezier(.65,0,.35,1)`;
-    heroFlip.style.transform = "translateZ(0)";
-  }, qDoneAt + HOLD_MS);
+  // --- фаза 3: остальная страница проявляется сверху вниз, по одному элементу ---
+  veilEls.forEach((el, i) => {
+    setTimeout(() => {
+      el.classList.add("visible");
+    }, qDoneAt + HOLD_MS + i * STAGGER_MS);
+  });
 
-  // --- фаза 4: остальная страница проявляется "из пелены" ---
+  const totalMs = qDoneAt + HOLD_MS + veilEls.length * STAGGER_MS + 800;
   setTimeout(() => {
-    veilEls.forEach((el) => el.classList.add("visible"));
-  }, qDoneAt + HOLD_MS + FLY_MS + REST_DELAY_MS);
-
-  // уборка: снимаем инлайновый transform и блокировку скролла
-  setTimeout(() => {
-    heroFlip.style.transition = "";
-    heroFlip.style.transform = "";
-    heroFlip.style.transformOrigin = "";
     document.body.classList.remove("no-scroll");
-  }, qDoneAt + HOLD_MS + FLY_MS + REST_DELAY_MS + 800);
+  }, totalMs);
 })();

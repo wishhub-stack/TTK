@@ -65,17 +65,19 @@ body.no-scroll {
   margin-bottom: 16px;
 }
 
-/* группа "логотип + ???", которая на входе стоит по центру экрана
-   крупно (см. inline transform в script.js), а затем одним плавным
-   движением "долетает" на своё обычное место в шапке */
+/* группа "логотип + ???" — стоит на своём обычном месте в шапке
+   с самого начала, без перелёта; см. простой fade-in в script.js */
 
 .hero-flip {
   display: inline-block;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  perspective: 1000px;
-  -webkit-perspective: 1000px;
+}
+
+.tagline-marks {
+  display: inline-block;
+}
+
+.tagline-marks.finale-ready {
+  cursor: pointer;
 }
 
 .hero-logo {
@@ -419,82 +421,14 @@ body.no-scroll {
   font-size: 13px;
 }
 
-/* ---------- Финальный экран: подпись ---------- */
+/* ---------- Финальный экран: те же "???" переезжают в центр и открывают подпись ---------- */
 
-.finale {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  width: 100%;
-  text-align: center;
-}
-
-.finale-trigger {
-  appearance: none;
+/* карточка на финальном экране — без пунктирной рамки и фона */
+#app.finale-app {
   background: transparent;
   border: none;
-  padding: 10px;
-  margin: 0;
-  cursor: pointer;
-  transform-origin: center;
-  transition: transform 0.42s cubic-bezier(.65,0,.35,1), opacity 0.38s ease;
-}
-
-.finale-trigger.growing {
-  transform: scale(3.4);
-  opacity: 0;
-}
-
-.finale-reveal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  opacity: 0;
-  transform: scale(0.88);
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.65,0,.35,1);
-}
-
-.finale-reveal.visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.finale-svg {
-  width: min(66vw, 240px);
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-
-.finale-stroke {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.finale-fill {
-  fill: var(--gold-light);
-  opacity: 0;
-}
-
-.finale-cta {
-  display: inline-block;
-  text-decoration: none;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  pointer-events: none;
-}
-
-.finale-cta.visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+  padding: 0;
+  box-shadow: none;
 }
 
 .finale-restart {
@@ -513,13 +447,58 @@ body.no-scroll {
   opacity: 0.6;
 }
 
+/* содержимое, которое встаёт на место "???" после тапа */
+.finale-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  font-style: normal;
+  letter-spacing: normal;
+}
+
+.finale-svg {
+  width: min(44vw, 160px);
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.finale-stroke {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.finale-fill {
+  fill: var(--gold);
+  opacity: 0;
+}
+
+.finale-cta {
+  display: inline-block;
+  text-decoration: none;
+  font-style: normal;
+  letter-spacing: normal;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+.finale-cta.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .logo-img,
   .hero-tagline .q,
   .veil,
-  .hero-flip,
-  .finale-trigger,
-  .finale-reveal,
+  .tagline-marks,
   .finale-cta {
     transition: none !important;
   }
